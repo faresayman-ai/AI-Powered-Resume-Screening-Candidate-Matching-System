@@ -1,0 +1,889 @@
+{
+  "name": "AI-Powered Resume Screening & Candidate Matching System",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -448
+      ],
+      "id": "1a743ff6-3a0c-4748-a56e-6ad9768a2371",
+      "name": "Extract CV Text"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.cv_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -352
+      ],
+      "id": "7f64f2fa-2873-4cf6-a62e-a155df745587",
+      "name": "CV Finder",
+      "retryOnFail": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cL2f5u3Ur60pctFf",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.job_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        32
+      ],
+      "id": "bf599733-f896-41a5-8cd5-8f6941117a7a",
+      "name": "Job Finder",
+      "retryOnFail": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cL2f5u3Ur60pctFf",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -64
+      ],
+      "id": "ec1b490f-2ecb-4389-864c-7668c889fc5f",
+      "name": "Extract Job Text"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        544,
+        -256
+      ],
+      "id": "e7c14de9-967d-4d6b-9f97-40fca39b0eb8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\n\nif (!row.Applicant_cv || !row.assigned_job_offer_id) {\n  throw new Error(`Missing CV or Job URL for candidate: ${row.name}`);\n}\n\nfunction extractDriveId(url) {\n  const match = url.match(/[-\\w]{25,}/);\n  return match ? match[0] : url;\n}\n\nreturn [{\n  json: {\n    cv_id: extractDriveId(row.Applicant_cv),\n    job_id: extractDriveId(row.assigned_job_offer_id),\n    candidate_name: row.name,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -160
+      ],
+      "id": "917ffe6a-84d4-4326-a427-d3ee26875c4a",
+      "name": "ID Extraction"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    'CV text': $input.first().json.text,\n    'Job Text': $input.last().json.text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -256
+      ],
+      "id": "84aa45f3-dac4-4360-9584-5bf843a54add",
+      "name": "Text Extraction"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        320
+      ],
+      "id": "22991667-3d12-491a-8bd8-9b97efdf18be",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM",
+          "mode": "list",
+          "cachedResultName": "Application Final",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1071817809,
+          "mode": "list",
+          "cachedResultName": "applications",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit#gid=1071817809"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1024,
+        320
+      ],
+      "id": "e005286f-09c1-4800-b122-a261849cb3e1",
+      "name": "Application Spreadsheet Deploy",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VdQvCOO7iZDo71f9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -576,
+        304
+      ],
+      "id": "a139697e-dc91-4274-9c8b-d4eef6a4675e",
+      "name": "Loop",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().filter(item => {\n  const status = item.json.Status;\n  return !status || status.trim() === \"\";\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        320
+      ],
+      "id": "d51db864-8fa0-496e-9b27-39cbb095e3f5",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ade7e7bf-f411-4abd-8538-8d6738b5e3e1",
+              "leftValue": "={{ $json.job_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        32
+      ],
+      "id": "cacf421f-0b27-48ff-b591-16548c2690ed",
+      "name": "Quick Check For Job"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ade7e7bf-f411-4abd-8538-8d6738b5e3e1",
+              "leftValue": "={{ $json.cv_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        -352
+      ],
+      "id": "5d4f2174-1b9e-4466-a95e-e0f986501c4d",
+      "name": "Quick Check For CV"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM",
+          "mode": "list",
+          "cachedResultName": "Application Final",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1071817809,
+          "mode": "list",
+          "cachedResultName": "applications",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit#gid=1071817809"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "application_id": "={{ $('Application Spreadsheet Deploy').item.json.application_id }}",
+            "Status": "Reading CV File Has Failed"
+          },
+          "matchingColumns": [
+            "application_id"
+          ],
+          "schema": [
+            {
+              "id": "application_id",
+              "displayName": "application_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applicant_name",
+              "displayName": "applicant_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Applicant_cv",
+              "displayName": "Applicant_cv",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applicant_email",
+              "displayName": "applicant_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assigned_job_offer_id",
+              "displayName": "assigned_job_offer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        -256
+      ],
+      "id": "44d1c595-d24b-4fe1-8767-42bc8dc821b5",
+      "name": "Error CV",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VdQvCOO7iZDo71f9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM",
+          "mode": "list",
+          "cachedResultName": "Application Final",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1071817809,
+          "mode": "list",
+          "cachedResultName": "applications",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit#gid=1071817809"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "application_id": "={{ $('Application Spreadsheet Deploy').item.json.application_id }}",
+            "Status": "Reading Job File Has Failed"
+          },
+          "matchingColumns": [
+            "application_id"
+          ],
+          "schema": [
+            {
+              "id": "application_id",
+              "displayName": "application_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applicant_name",
+              "displayName": "applicant_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Applicant_cv",
+              "displayName": "Applicant_cv",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applicant_email",
+              "displayName": "applicant_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assigned_job_offer_id",
+              "displayName": "assigned_job_offer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        128
+      ],
+      "id": "a5ab7ca0-8a59-47d1-9b13-8b5af8e02574",
+      "name": "Error Job",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VdQvCOO7iZDo71f9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are acting as a strict job recruiter.\n\nYour task is to decide if the candidate is truly qualified for the job by comparing the CV with the Job Description.\n\nRules:\n\n* Carefully compare the candidate's skills, experience, tools, education, and responsibilities with the job requirements.\n* The candidate should be marked **Accepted** ONLY if the CV clearly shows most of the required skills and relevant experience.\n* If important required skills, qualifications, or relevant experience are missing, return **Not Qualified**.\n* Do NOT assume skills that are not explicitly written in the CV.\n* If the match is weak, partial, or unclear, return **Not Qualified**.\n* Only return **Error** if the CV or Job Description is missing or empty.\n\nCV:\n{{ $json['CV text'] }}\n\nJob Description:\n{{ $json['Job Text'] }}\n\nReturn ONLY one of these words exactly:\nAccepted\nNot Qualified\nError\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        992,
+        -256
+      ],
+      "id": "751d2678-ccf9-491e-9fb9-e9ff7eedf71a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-lite-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -32
+      ],
+      "id": "f16eca0f-2f14-4ebf-8da3-e3196b5bbeee",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "U53Yb1rLzWJ1Zl41",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM",
+          "mode": "list",
+          "cachedResultName": "Application Final",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1071817809,
+          "mode": "list",
+          "cachedResultName": "applications",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_x9J0j6wtuhfAceLSz1-DTXgFiiF92-z-BtQHN5l2oM/edit#gid=1071817809"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "application_id": "={{ $('Application Spreadsheet Deploy').item.json.application_id }}",
+            "Status": "={{ $json.text }}"
+          },
+          "matchingColumns": [
+            "application_id"
+          ],
+          "schema": [
+            {
+              "id": "application_id",
+              "displayName": "application_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applicant_name",
+              "displayName": "applicant_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Applicant_cv",
+              "displayName": "Applicant_cv",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applicant_email",
+              "displayName": "applicant_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assigned_job_offer_id",
+              "displayName": "assigned_job_offer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -256
+      ],
+      "id": "2e539d51-72b3-4f70-b2d1-b0c53b50fc04",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VdQvCOO7iZDo71f9",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "CV Finder": {
+      "main": [
+        [
+          {
+            "node": "Quick Check For CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Finder": {
+      "main": [
+        [
+          {
+            "node": "Quick Check For Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CV Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Text Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ID Extraction": {
+      "main": [
+        [
+          {
+            "node": "Job Finder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CV Finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Extraction": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Application Spreadsheet Deploy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Application Spreadsheet Deploy": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "ID Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quick Check For Job": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quick Check For CV": {
+      "main": [
+        [
+          {
+            "node": "Extract CV Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Job": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error CV": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "539746e2-53f5-456b-8b62-47d898efbc77",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1deade8a2d7f34dfb425b3fe11be4bc75a4ed101db67b7a4d4cf978122d91ad5"
+  },
+  "id": "UnA9vU71YquA3pRU35aPK",
+  "tags": []
+}

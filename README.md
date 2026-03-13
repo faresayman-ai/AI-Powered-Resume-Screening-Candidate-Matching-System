@@ -1,6 +1,16 @@
 # 🤖 AI-Powered Resume Screening & Candidate Matching System
 
-> An intelligent n8n automation workflow that uses AI to screen job applicants at scale — automatically comparing CVs against job descriptions and updating application statuses in real time.
+> An intelligent automation workflow built with **n8n** that uses AI to screen job applicants at scale — automatically comparing CVs against job descriptions and delivering instant verdicts.
+
+---
+
+## 🌐 Live Demo
+
+**👉 Try it instantly — no setup required:**
+
+## [https://hireiq.aicvscreening.workers.dev/](https://hireiq.aicvscreening.workers.dev/)
+
+Upload a job description and candidate CVs — AI analyzes each match and gives a clear **Accept** or **Not Qualified** verdict in seconds.
 
 ---
 
@@ -94,7 +104,9 @@ The LLM is prompted to act as a **strict recruiter** with clear rules:
 
 ---
 
-## 🚀 How to Use
+## 🚀 Self-Host with n8n
+
+Want to run this on your own data? Follow these steps:
 
 ### Prerequisites
 - [n8n](https://n8n.io) (self-hosted or cloud)
@@ -132,15 +144,15 @@ The LLM is prompted to act as a **strict recruiter** with clear rules:
 | File | Description |
 |------|-------------|
 | `AI-Powered_Resume_Screening___Candidate_Matching_System.json` | n8n workflow export (import this into n8n) |
-| `Applications_Before.xlsx` | Sample input — 999 applicants with empty Status column |
-| `Applications_After.xlsx` | Sample output — Status column filled by the AI |
+| `Dataset Before.xlsx` | Sample input — 999 applicants with empty Status column |
+| `Dataset After.xlsx` | Sample output — Status column filled by the AI |
 
 ---
 
 ## 📝 License
 
-MIT — feel free to use, adapt, and build on this workflow.
+MIT — free to use, adapt, and build on.
 
 ---
 
-*Built with n8n + OpenRouter. Designed to save recruiters hours of manual CV screening.*
+*Built with n8n + OpenRouter. Try the live demo at [hireiq.aicvscreening.workers.dev](https://hireiq.aicvscreening.workers.dev/)*

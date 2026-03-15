@@ -8,7 +8,7 @@
 
 **👉 Try it instantly — no setup required:**
 
-## [https://hireiq.aicvscreening.workers.dev/](https://hireiq.aicvscreening.workers.dev/)
+## [(https://faresayman-ai.github.io/AI-Powered-Resume-Screening-Candidate-Matching-System/)
 
 Upload a job description and candidate CVs — AI analyzes each match and gives a clear **Accept** or **Not Qualified** verdict in seconds.
 
